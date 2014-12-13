@@ -7,4 +7,4 @@ global.framework = require("./framework");
 
 framework.initLoad();
 
-framework.startServer(9090);
+framework.startServer(8899);

@@ -23,7 +23,7 @@ var routeClass = (function(){
 		// Defaults
 		this.mapRouteConfig = {
 			name: "DefaultApi",
-			routeTemplate: "api/{controller}/{action}/{id}"
+			routeTemplate: "/api/{controller}/{action}/{id}"
 		};
 
 		this.routeSetter = function(routeObj){
@@ -48,22 +48,28 @@ var routeClass = (function(){
 		};
 
 		this.routeGetter = function(){
-
 			return _routeCollection;
 		};
 
 		this.findRouteByRequest = function(parsedUrl, callback){
-			var self = this;
+			var self = this,
+				req = this.request,
+				res = this.response;
 
 			if(!!parsedUrl){
 				// parsedUrl.pathname(uri): /api/login/submit/5
+				/* 	1. Get the controller name
+					2. Get the action name
+				*/
 				console.log(parsedUrl);
-				var routeTemplateArray = parsedUrl.pathname.toLowerCase().split('/'),
-					routeValues,
+				var routeValues,
 					routeflag = false;
 
-				if(!!routeTemplateArray && routeTemplateArray.length){
-					routeValues = _resolveRoute(routeTemplateArray);
+				if(parsedUrl.pathname !== '/'){
+					routeValues = _resolveRoute(parsedUrl.pathname);
+				}else{
+					res.statusCode = 400;
+					res.end(self.httpStatusCodes['400']);
 				}
 
 				console.log(_routeCollection);
@@ -79,12 +85,15 @@ var routeClass = (function(){
 
 								callback(false, {
 									actionCb: action.callback,
-									param: !!routeTemplateArray[4] ? routeTemplateArray[4] : undefined
+									param: routeValues.uriParam,
+									attr: action.attr
 								});
 
 								return;
 							}
 						});
+
+						return;
 					}
 				});
 
@@ -94,10 +103,18 @@ var routeClass = (function(){
 			}
 		};
 
-		var _resolveRoute = function(routeTemplateArray){
-			return {
-				controllerName: routeTemplateArray[2],
-				actionName: routeTemplateArray[3]
+		var _resolveRoute = function(uripath){
+			// uri: /api/login/submit/5
+
+			var routeTemplateArray = uripath.toLowerCase().split('/');
+			console.log(routeTemplateArray);
+			if(!!routeTemplateArray && routeTemplateArray.length){
+
+				return {
+					controllerName: routeTemplateArray[2],
+					actionName: routeTemplateArray[3],
+					uriParam: !!routeTemplateArray[4] ? routeTemplateArray[4] : undefined
+				}
 			}
 		};
 

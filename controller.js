@@ -44,7 +44,8 @@ var controllerClass = (function (){
 							paramLiteral: actionParams[1].substr(1, actionParams[1].length-2),
 							optional: isOptional,
 							callback: callback,
-							httpVerb: httpVerb
+							httpVerb: httpVerb,
+							attr: attr || {auth: false}
 						}
 					}
 
