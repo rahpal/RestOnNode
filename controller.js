@@ -12,9 +12,17 @@ var controllerClass = (function (){
 
 		that.name = name;
 
-		that.setAction = function(actionWithParams, verb, callback, attr){
+		that.get = function(actionWithParams, callback, attr){
+			_setAction(actionWithParams, "GET", callback, attr);
+		};
+
+		that.post = function(actionWithParams, callback, attr){
+			_setAction(actionWithParams, "POST", callback, attr);
+		};
+
+		var _setAction = function(actionWithParams, verb, callback, attr){
 			var httpVerb = verb || "GET",
-				actionParams, actionname, parameter, isOptional = false;
+				actionParams, actionname, isOptional = false;
 
 			try{
 				if(!!actionWithParams){
@@ -30,10 +38,12 @@ var controllerClass = (function (){
 								}
 						}
 					*/
-					//console.log(actionParams);
-					var paramRegex = new RegExp("^[\{][a-z]*[\}]$");
-					if(paramRegex.test(actionParams[1])){
-						isOptional = true;
+					if(actionParams.length === 2){
+						//console.log(actionParams);
+						var paramRegex = new RegExp("^[\{][a-z]*[\}]$");
+						if(paramRegex.test(actionParams[1])){
+							isOptional = true;
+						}
 					}
 
 					// form data object
@@ -41,7 +51,7 @@ var controllerClass = (function (){
 						controllerName: name,
 						actionData: {
 							actionname: actionParams[0],
-							paramLiteral: actionParams[1].substr(1, actionParams[1].length-2),
+							//paramLiteral: actionParams[1].substr(1, actionParams[1].length-2),
 							optional: isOptional,
 							callback: callback,
 							httpVerb: httpVerb,

@@ -19,7 +19,9 @@ appFramework.prototype.config = {
 
 appFramework.prototype.sendJSON = function(obj){
 	// Send the response in JSON format
-
+	// Enabling CORS
+	this.response.setHeader("Access-Control-Allow-Origin", "*");
+	this.response.setHeader("Access-Control-Allow-Methods", "GET,PUT,POST,DELETE");
 	this.response.end(JSON.stringify(obj, null, '\t'));
 };
 
@@ -67,10 +69,8 @@ appFramework.prototype.getRequestPayload = function(callback){
 
 				req.on("end", function(){
 					//console.log(payload);
-					if(!!payload){
-						parsedPayload = qs.parse(payload);
-						callback(parsedPayload);
-					}
+					parsedPayload = qs.parse(payload);
+					callback(parsedPayload);
 				});
 				break;
 		}
@@ -123,7 +123,7 @@ appFramework.prototype.startServer = function(port){
 								switch(that.request.method){
 									case 'GET':
 										// format the qs object to array
-										args = Object.keys(payload).map(function(k){ return payload[k]; });
+										args = Object.keys(payload).map(function(key){ return payload[key]; });
 										console.log(args);
 										break;
 									case 'POST':
