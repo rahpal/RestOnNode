@@ -19,7 +19,7 @@ appFramework.prototype.config = {
 
 appFramework.prototype.sendJSON = function(obj){
 	// Send the response in JSON format
-	// Enabling CORS
+	// Enabling CORS for all Origins.
 	this.response.setHeader("Access-Control-Allow-Origin", "*");
 	this.response.setHeader("Access-Control-Allow-Methods", "GET,PUT,POST,DELETE");
 	this.response.end(JSON.stringify(obj, null, '\t'));

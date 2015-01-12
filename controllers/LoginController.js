@@ -2,15 +2,11 @@
 
 var loginController = new controller("login");
 
-loginController.get("testJson/{id}", function(test, pass){
+loginController.get("testJson", function(startpage, endpage, pagesize){
 	//_view.renderView("index");
+	console.log(startpage +","+endpage+","+ pagesize);
 	var res = this.response;
 	// To Write a Cookie
-	res.writeHead(200, {
-		'Set-Cookie': 'username=drapal',
-		'Content-Type': 'text/plain'
-	});
-
 	var makeSampleData = function () {
 	  var sampleDataSize = 30;
 	  var jobData = [];
@@ -41,7 +37,7 @@ loginController.get("testJson/{id}", function(test, pass){
 	  return jobData;
 	}
 
-	this.sendJSON(makeSampleData());
+	this.sendJSON({ policy: makeSampleData(), RowCount: 100});
 
 }, { auth: false });
 
