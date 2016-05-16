@@ -1,0 +1,15 @@
+{
+  "name": "restonnode",
+  "description": "RESTful framework on NodeJS",
+  "version": "0.0.2",
+  "license": "MIT",
+  "author": "Rahul Pal <rahul.pal105@outlook.com>",
+  "contributors": [
+    
+  ],
+  "homepage": "https://github.com/rahpal/RestOnNode",
+  "repository": "rahpal/RestOnNode",
+  "dependencies": {
+    "mysql": "2.10.2"
+  }
+}

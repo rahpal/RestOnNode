@@ -8,6 +8,10 @@ Desktop.ini
 # Recycle Bin used on file shares
 $RECYCLE.BIN/
 
+# Files/directories to ignore
+node_modules/
+.vscode/
+
 # Windows Installer files
 *.cab
 *.msi
@@ -26,7 +30,8 @@ $RECYCLE.BIN/
 .LSOverride
 
 # Icon must end with two \r
-Icon
+Icon
+
 
 # Thumbnails
 ._*
