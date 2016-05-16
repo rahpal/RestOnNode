@@ -3,16 +3,16 @@
 var mysql = require("mysql"),
 connectionPool  = mysql.createPool({
     connectionLimit : 100,  //Limit  
-    host     : 'us-cdbr-azure-west-c.cloudapp.net',
-    user     : 'b169c1bd79ccf5',
-    password : '4f719d05',
-    database : 'swdrtfgyhjyvr'
+    host     : '<hostname>',
+    user     : '<user>',
+    password : '<password>',
+    database : '<db>'
 }),
 sconnection = mysql.createConnection({
     host     : '127.0.0.1',
     user     : 'root',
     password : 'root',
-    database : 'mmtport'
+    database : 'test'
 });
     
 connectionPool.on('connection', function (connection) {
