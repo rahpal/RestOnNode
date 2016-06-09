@@ -78,6 +78,8 @@ var routeClass = (function(){
 					console.log("index :" +index);
 					if(route.controllerName.toLowerCase() === routeValues.controllerName.toLowerCase()){
 						route.actions.forEach(function(action, index, actions){
+							// We skip the [OPTIONS] requests.
+							if(req.method === 'OPTIONS') callback(true, { message: 'Skipping OPTIONS (preflight) request.' });
 							if(action.actionname.toLowerCase() === routeValues.actionName.toLowerCase()
 								&& action.httpVerb.toUpperCase() === self.request.method.toUpperCase()){
 								//console.log("I am inside "+action);
@@ -99,7 +101,7 @@ var routeClass = (function(){
 				});
 
 				if(!routeflag){
-					callback(true, undefined);
+					callback(true, { message: 'Route(s) does not exist.' });
 				}
 			}
 		};

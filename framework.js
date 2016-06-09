@@ -29,6 +29,7 @@ appFramework.prototype.sendJSON = function(obj){
 	// Enabling CORS for all Origins.
 	that.response.setHeader("Access-Control-Allow-Origin", "*");
 	that.response.setHeader("Access-Control-Allow-Methods", "GET,PUT,POST,DELETE");
+	that.response.setHeader("Access-Control-Allow-Headers", "Content-Type");
 	that.response.end(JSON.stringify(obj, null, '\t'));
 };
 
@@ -125,7 +126,7 @@ appFramework.prototype.startServer = function(port){
 
 				route.findRouteByRequest.call(that, parsedUrl, function(error, data){
 					//console.log("Tested");
-					if(error) console.log("Route doesn't exist.");
+					if(error) console.log(data.message);
 					// data contains callback function and optional params
 					/* 
 						Now check for two things:
