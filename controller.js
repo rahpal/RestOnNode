@@ -7,20 +7,20 @@ var controllerClass = (function (){
 	var path = require("path"),
 		route = new router();
 
-	function _controller(name){
+	function _controller(name, ctrlLvlHandler){
 		var that = this;
 
 		that.name = name;
 
-		that.get = function(actionWithParams, callback, attr){
-			_setAction(actionWithParams, "GET", callback, attr);
+		that.get = function(actionWithParams, callback, attr ,handler){
+			_setAction(actionWithParams, "GET", callback, attr, !!handler ? handler: ctrlLvlHandler);
 		};
 
-		that.post = function(actionWithParams, callback, attr){
-			_setAction(actionWithParams, "POST", callback, attr);
+		that.post = function(actionWithParams, callback, attr, handler){
+			_setAction(actionWithParams, "POST", callback, attr, !!handler ? handler: ctrlLvlHandler);
 		};
 
-		var _setAction = function(actionWithParams, verb, callback, attr){
+		var _setAction = function(actionWithParams, verb, callback, attr, handler){
 			var httpVerb = verb || "GET",
 				actionParams, actionname, isOptional = false;
 
@@ -55,7 +55,8 @@ var controllerClass = (function (){
 							optional: isOptional,
 							callback: callback,
 							httpVerb: httpVerb,
-							attr: attr || {auth: false}
+							attr: attr || {auth: false},
+							handler: handler
 						}
 					}
 

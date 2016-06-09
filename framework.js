@@ -9,26 +9,34 @@ var http = require("http"),
 	path = require("path"),
 	root = __dirname;
 
-var auth = require('./auth');
-
 var appFramework = function(){ /*empty function*/ };
 
+// Contains all HTTP message handlers.
+appFramework.handlerCollection = [];
+
 appFramework.prototype.config = {
-	controllerPath: path.join(root + "/controllers")
+	controllerPath: path.join(root + "/controllers"),
+	handlerPath: path.join(root + "/handlers"),
+	skipMessageHandlers: false
 };
 
 appFramework.prototype.sendJSON = function(obj){
+	var that = this;
+	that.response.activeHandlerCollection.forEach(function(handler, index){
+		handler.handleResponse.call(that, that.request, that.response);
+	});
 	// Send the response in JSON format
 	// Enabling CORS for all Origins.
-	this.response.setHeader("Access-Control-Allow-Origin", "*");
-	this.response.setHeader("Access-Control-Allow-Methods", "GET,PUT,POST,DELETE");
-	this.response.end(JSON.stringify(obj, null, '\t'));
+	that.response.setHeader("Access-Control-Allow-Origin", "*");
+	that.response.setHeader("Access-Control-Allow-Methods", "GET,PUT,POST,DELETE");
+	that.response.end(JSON.stringify(obj, null, '\t'));
 };
 
 appFramework.prototype.initLoad = function(){
 	console.log("InitLoad InProgress...");
 
-	var controllerPath = this.config.controllerPath;
+	var controllerPath = this.config.controllerPath,
+		handlerPath = this.config.handlerPath;
 
 	if(fs.existsSync(controllerPath)){
 		fs.readdir(controllerPath, function(error, files){
@@ -36,12 +44,24 @@ appFramework.prototype.initLoad = function(){
 				require(path.join(controllerPath + '/' + file));
 			});
 		});
-
-		console.log("InitLoad Done...");
-	}else{
+	} else {
 		response.statusCode = 404;
 		response.end(http.STATUS_CODES['404']);
 	}
+
+	// Initialize all handlers here
+	if(fs.existsSync(handlerPath)){
+		fs.readdir(handlerPath, function(error, files){
+			files.forEach(function(file, index, files){
+				appFramework.handlerCollection.push(require(path.join(handlerPath + '/' + file)));
+			});
+		});
+	} else {
+		response.statusCode = 404;
+		response.end(http.STATUS_CODES['404']);
+	}
+
+	console.log("InitLoad Done...");
 };
 
 appFramework.prototype.getRequestPayload = function(callback){
@@ -79,20 +99,29 @@ appFramework.prototype.getRequestPayload = function(callback){
 
 appFramework.prototype.startServer = function(port){
 
-	var that = this;
-
-	var url = require("url"),
+	var that = this,
 		route = new router(); // Get the file server root directory path
-
+		
+		// Request pipeline starts here.
 		http.createServer(function(request, response){
 			if(!!request){
 				console.log(request.url);
 				var parsedUrl = url.parse(request.url),
 					routeFound = false;
+				response.activeHandlerCollection = [];
 				//console.log("Url : "+parsedUrl.pathname);
 				that.request = request;
 				that.response = response;
 				that.httpStatusCodes = http.STATUS_CODES;
+
+				//Pipeline#1: HTTP Message Handlers (Global).
+				if(!that.config.skipMessageHandlers){
+					// Request must pass through all defined handlers.
+					appFramework.handlerCollection.forEach(function(handler, index){
+						handler.handleRequest.call(that, request, response);
+						response.activeHandlerCollection.unshift(handler);
+					});
+				};
 
 				route.findRouteByRequest.call(that, parsedUrl, function(error, data){
 					//console.log("Tested");
@@ -101,15 +130,17 @@ appFramework.prototype.startServer = function(port){
 					/* 
 						Now check for two things:
 						1. Authentication(Form only)
-						2. Authorization
+						2. Request handlers per route
 					*/
 					//console.log(data);
-					if(!!data && !!data.attr){
-						if(!!data.attr.auth && !auth.onAuthentication.call(that)){
-							response.statusCode = 403;
-							response.end(http.STATUS_CODES['403']);
-							return;
-						}
+					if(!!data && !!data.attr && !!data.handler){
+						appFramework.handlerCollection.forEach(function(handler, index){
+							if(data.handler.toLowerCase() === handler.handlerName.toLowerCase()){
+								handler.handleRequest.call(that, request, response);
+								response.activeHandlerCollection.unshift(handler);
+								return;
+							}
+						});
 					}
 
 					if(!!data){
@@ -118,7 +149,7 @@ appFramework.prototype.startServer = function(port){
 							var uriParam = data.param,
 								args;
 
-							console.log("Test: "+payload);
+							//console.log("Test: "+payload);
 							if(!!payload){
 								switch(that.request.method){
 									case 'GET':
@@ -127,7 +158,7 @@ appFramework.prototype.startServer = function(port){
 										console.log(args);
 										break;
 									case 'POST':
-										args = uriParam === undefined ? [uriParam, payload]: [payload];
+										args = uriParam === undefined ? [payload]: [uriParam, payload];
 										console.log(payload);
 										break;
 								}

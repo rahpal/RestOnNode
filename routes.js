@@ -86,7 +86,8 @@ var routeClass = (function(){
 								callback(false, {
 									actionCb: action.callback,
 									param: routeValues.uriParam,
-									attr: action.attr
+									attr: action.attr,
+									handler: action.handler
 								});
 
 								return;
