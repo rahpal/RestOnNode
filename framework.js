@@ -17,7 +17,7 @@ appFramework.handlerCollection = [];
 appFramework.prototype.config = {
 	controllerPath: path.join(root + "/controllers"),
 	handlerPath: path.join(root + "/handlers"),
-	skipMessageHandlers: false
+	skipMessageHandlers: true
 };
 
 appFramework.prototype.sendJSON = function(obj){
@@ -125,15 +125,19 @@ appFramework.prototype.startServer = function(port){
 				};
 
 				route.findRouteByRequest.call(that, parsedUrl, function(error, data){
-					//console.log("Tested");
-					if(error) console.log(data.message);
+					if(error) {
+						console.log(data.message);
+						// We skip the [OPTIONS] requests.
+						// End Response here if its a preflight request or Invalid route.
+						that.sendJSON();
+						return;
+					}
 					// data contains callback function and optional params
 					/* 
 						Now check for two things:
 						1. Authentication(Form only)
 						2. Request handlers per route
 					*/
-					//console.log(data);
 					if(!!data && !!data.attr && !!data.handler){
 						appFramework.handlerCollection.forEach(function(handler, index){
 							if(data.handler.toLowerCase() === handler.handlerName.toLowerCase()){

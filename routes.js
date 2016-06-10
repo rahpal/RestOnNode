@@ -78,19 +78,20 @@ var routeClass = (function(){
 					console.log("index :" +index);
 					if(route.controllerName.toLowerCase() === routeValues.controllerName.toLowerCase()){
 						route.actions.forEach(function(action, index, actions){
-							// We skip the [OPTIONS] requests.
-							if(req.method === 'OPTIONS') callback(true, { message: 'Skipping OPTIONS (preflight) request.' });
-							if(action.actionname.toLowerCase() === routeValues.actionName.toLowerCase()
-								&& action.httpVerb.toUpperCase() === self.request.method.toUpperCase()){
-								//console.log("I am inside "+action);
+							if(action.actionname.toLowerCase() === routeValues.actionName.toLowerCase()){
 								routeflag = true;
-
-								callback(false, {
-									actionCb: action.callback,
-									param: routeValues.uriParam,
-									attr: action.attr,
-									handler: action.handler
-								});
+								// We skip the [OPTIONS] requests from the browser.
+								if(req.method === 'OPTIONS') {
+									callback(true, { message: 'Skipping [OPTIONS] (preflight) request.' });
+								} else if(action.httpVerb.toUpperCase() === self.request.method.toUpperCase()){
+									//console.log("I am inside "+action);
+									callback(false, {
+										actionCb: action.callback,
+										param: routeValues.uriParam,
+										attr: action.attr,
+										handler: action.handler
+									});
+								}
 
 								return;
 							}
