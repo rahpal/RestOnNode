@@ -17,7 +17,7 @@ appFramework.handlerCollection = [];
 appFramework.prototype.config = {
 	controllerPath: path.join(root + "/controllers"),
 	handlerPath: path.join(root + "/handlers"),
-	skipMessageHandlers: true
+	skipMessageHandlers: false
 };
 
 appFramework.prototype.sendJSON = function(obj){
@@ -105,74 +105,80 @@ appFramework.prototype.startServer = function(port){
 		
 		// Request pipeline starts here.
 		http.createServer(function(request, response){
-			if(!!request){
-				console.log(request.url);
-				var parsedUrl = url.parse(request.url),
-					routeFound = false;
-				response.activeHandlerCollection = [];
-				//console.log("Url : "+parsedUrl.pathname);
-				that.request = request;
-				that.response = response;
-				that.httpStatusCodes = http.STATUS_CODES;
+			try{
+				if(!!request){
+					console.log(request.url);
+					var parsedUrl = url.parse(request.url),
+						routeFound = false;
+					response.activeHandlerCollection = [];
+					//console.log("Url : "+parsedUrl.pathname);
+					that.request = request;
+					that.response = response;
+					that.httpStatusCodes = http.STATUS_CODES;
 
-				//Pipeline#1: HTTP Message Handlers (Global).
-				if(!that.config.skipMessageHandlers){
-					// Request must pass through all defined handlers.
-					appFramework.handlerCollection.forEach(function(handler, index){
-						handler.handleRequest.call(that, request, response);
-						response.activeHandlerCollection.unshift(handler);
-					});
-				};
-
-				route.findRouteByRequest.call(that, parsedUrl, function(error, data){
-					if(error) {
-						console.log(data.message);
-						// We skip the [OPTIONS] requests.
-						// End Response here if its a preflight request or Invalid route.
-						that.sendJSON();
-						return;
-					}
-					// data contains callback function and optional params
-					/* 
-						Now check for two things:
-						1. Authentication(Form only)
-						2. Request handlers per route
-					*/
-					if(!!data && !!data.attr && !!data.handler){
+					//Pipeline#1: HTTP Message Handlers (Global).
+					if(!that.config.skipMessageHandlers){
+						// Request must pass through all defined handlers.
 						appFramework.handlerCollection.forEach(function(handler, index){
-							if(data.handler.toLowerCase() === handler.handlerName.toLowerCase()){
-								handler.handleRequest.call(that, request, response);
-								response.activeHandlerCollection.unshift(handler);
-								return;
-							}
+							handler.handleRequest.call(that, request, response);
+							response.activeHandlerCollection.unshift(handler);
 						});
-					}
+					};
 
-					if(!!data){
-						// Get the request payload if there
-						that.getRequestPayload(function(payload){
-							var uriParam = data.param,
-								args;
-
-							//console.log("Test: "+payload);
-							if(!!payload){
-								switch(that.request.method){
-									case 'GET':
-										// format the qs object to array
-										args = Object.keys(payload).map(function(key){ return payload[key]; });
-										console.log(args);
-										break;
-									case 'POST':
-										args = uriParam === undefined ? [payload]: [uriParam, payload];
-										console.log(payload);
-										break;
+					route.findRouteByRequest.call(that, parsedUrl, function(error, data){
+						if(error) {
+							console.log(data.message);
+							// We skip the [OPTIONS] requests.
+							// End Response here if its a preflight request or Invalid route.
+							that.response.statusCode = data.statusCode;
+							that.sendJSON(that.httpStatusCodes[data.statusCode]);
+							return;
+						}
+						// data contains callback function and optional params
+						/* 
+							Now check for two things:
+							1. Authentication(Form only)
+							2. Request handlers per route
+						*/
+						if(!!data && !!data.attr && !!data.handler){
+							appFramework.handlerCollection.forEach(function(handler, index){
+								if(data.handler.toLowerCase() === handler.handlerName.toLowerCase()){
+									handler.handleRequest.call(that, request, response);
+									response.activeHandlerCollection.unshift(handler);
+									return;
 								}
-								// Call controller action callback with args
-								data.actionCb.apply(that, args);
-							}
-						});
-					}
-				});
+							});
+						}
+
+						if(!!data){
+							// Get the request payload if there
+							that.getRequestPayload(function(payload){
+								var uriParam = data.param,
+									args;
+
+								//console.log("Test: "+payload);
+								if(!!payload){
+									switch(that.request.method){
+										case 'GET':
+											// format the qs object to array
+											args = Object.keys(payload).map(function(key){ return payload[key]; });
+											console.log(args);
+											break;
+										case 'POST':
+											args = uriParam === undefined ? [payload]: [uriParam, payload];
+											console.log(payload);
+											break;
+									}
+									// Call controller action callback with args
+									data.actionCb.apply(that, args);
+								}
+							});
+						}
+					});
+				}
+			}catch(ex){
+				that.response.statusCode = 500;
+				that.sendJSON(that.httpStatusCodes[500]);
 			}
 		}).listen(port);
 

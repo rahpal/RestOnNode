@@ -82,7 +82,10 @@ var routeClass = (function(){
 								routeflag = true;
 								// We skip the [OPTIONS] requests from the browser.
 								if(req.method === 'OPTIONS') {
-									callback(true, { message: 'Skipping [OPTIONS] (preflight) request.' });
+									callback(true, { 
+										message: 'Skipping [OPTIONS] (preflight) request.',
+										statusCode: 405
+									});
 								} else if(action.httpVerb.toUpperCase() === self.request.method.toUpperCase()){
 									//console.log("I am inside "+action);
 									callback(false, {
@@ -102,7 +105,10 @@ var routeClass = (function(){
 				});
 
 				if(!routeflag){
-					callback(true, { message: 'Route(s) does not exist.' });
+					callback(true, { 
+						message: 'Route(s) does not exist.',
+						statusCode: 404
+					});
 				}
 			}
 		};
