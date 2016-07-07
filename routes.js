@@ -94,6 +94,11 @@ var routeClass = (function(){
 										attr: action.attr,
 										handler: action.handler
 									});
+								} else {
+									callback(true, { 
+										message: 'Bad Request.',
+										statusCode: 400
+									});
 								}
 
 								return;
