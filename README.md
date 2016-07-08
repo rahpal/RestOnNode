@@ -18,7 +18,7 @@ This project is build using the same project archutecture which is followed by A
 <ul>
 <li>After downloading the project from npm, a package with name <strong>restonnode</strong> will be created inside node_modules folder. </li>
 <li>Inside <strong>restonnode</strong> folder, create your controller file inside ./lib/controller folder. For reference, follow <strong>LoginController.js</strong> file which already created inside ./lib/controller folder. </li>
-<li>Once you are done with your controller files, start server by running following command:  <strong>node initserver.js</strong>. </li>
+<li>Once you are done with your controller files, start server by running following command:  <strong>node cluster.js</strong>. </li>
 </ul>
 
 [NOTE]: You can configure different port number from initserver.js file.
